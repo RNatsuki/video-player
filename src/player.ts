@@ -3,162 +3,221 @@ export class VideoPlayer {
     private playPauseButton!: HTMLButtonElement;
     private forwardButton!: HTMLButtonElement;
     private rewindButton!: HTMLButtonElement;
+    private muteButton!: HTMLButtonElement; // Botón de mutear
+    private volumeSlider!: HTMLInputElement; // Control de volumen
     private controlsContainer!: HTMLDivElement;
     private progressBarContainer!: HTMLDivElement;
     private progressBar!: HTMLDivElement;
-    private storageKey: string = 'videoPlayerCurrentTime';
+    private storageKey: string = "videoPlayerCurrentTime";
     private controlsVisible: boolean = true;
     private hideControlsTimeout: any; // Para almacenar el timeout
     private videoContainer!: HTMLDivElement; // Contenedor del video
 
     constructor(videoElementId: string) {
-        this.videoElement = document.getElementById(videoElementId) as HTMLVideoElement;
-        this.videoContainer = this.videoElement.parentNode as HTMLDivElement; // Obtener el contenedor del video
-        this.createControls();
-        this.initializeControls();
-        this.loadCurrentTime();
-        this.addMouseMoveListener();
+      this.videoElement = document.getElementById(
+        videoElementId
+      ) as HTMLVideoElement;
+      this.videoContainer = this.videoElement.parentNode as HTMLDivElement; // Obtener el contenedor del video
+      this.createControls();
+      this.initializeControls();
+      this.loadCurrentTime();
+      this.addMouseMoveListener();
     }
 
     private createControls() {
-        // Crear contenedor de controles
-        this.controlsContainer = document.createElement('div');
-        this.controlsContainer.className = 'video-controls';
+      // Crear contenedor de controles
+      this.controlsContainer = document.createElement("div");
+      this.controlsContainer.className = "video-controls";
 
-        // Crear botón de reproducción/pausa
-        this.playPauseButton = document.createElement('button');
-        this.playPauseButton.innerHTML = '<i class="fas fa-play"></i>'; // Ícono inicial de reproducción
+      // Crear botón de reproducción/pausa
+      this.playPauseButton = document.createElement("button");
+      this.playPauseButton.innerHTML = '<i class="fas fa-play"></i>';
 
-        // Crear botón de adelantar
-        this.forwardButton = document.createElement('button');
-        this.forwardButton.innerHTML = '<i class="fas fa-forward"></i>'; // Ícono de adelantar
-        this.forwardButton.title = 'Adelantar 10 segundos';
+      // Crear botón de adelantar
+      this.forwardButton = document.createElement("button");
+      this.forwardButton.innerHTML = '<i class="fas fa-forward"></i>';
+      this.forwardButton.title = "Adelantar 10 segundos";
 
-        // Crear botón de atrasar
-        this.rewindButton = document.createElement('button');
-        this.rewindButton.innerHTML = '<i class="fas fa-backward"></i>'; // Ícono de atrasar
-        this.rewindButton.title = 'Atrasar 10 segundos';
+      // Crear botón de atrasar
+      this.rewindButton = document.createElement("button");
+      this.rewindButton.innerHTML = '<i class="fas fa-backward"></i>';
+      this.rewindButton.title = "Atrasar 10 segundos";
 
-        // Crear barra de progreso
-        this.progressBarContainer = document.createElement('div');
-        this.progressBarContainer.className = 'progress-bar';
+      // Crear botón de mutear
+      this.muteButton = document.createElement("button");
+      this.muteButton.innerHTML = '<i class="fas fa-volume-up"></i>'; // Ícono de volumen inicial
 
-        this.progressBar = document.createElement('div');
-        this.progressBar.className = 'progress';
+      // Crear control de volumen
+      this.volumeSlider = document.createElement("input");
+      this.volumeSlider.type = "range";
+      this.volumeSlider.min = "0";
+      this.volumeSlider.max = "1";
+      this.volumeSlider.step = "0.01";
+      this.volumeSlider.value = this.videoElement.volume.toString(); // Establecer el volumen inicial
+      this.volumeSlider.className = "volume-slider"; // Clase para CSS
+      this.volumeSlider.style.display = "none"; // Ocultar por defecto
 
-        this.progressBarContainer.appendChild(this.progressBar);
+      // Crear barra de progreso
+      this.progressBarContainer = document.createElement("div");
+      this.progressBarContainer.className = "progress-bar";
 
-        // Agregar botones y barra de progreso al contenedor de controles
-        this.controlsContainer.appendChild(this.rewindButton);
-        this.controlsContainer.appendChild(this.playPauseButton);
-        this.controlsContainer.appendChild(this.forwardButton);
-        this.controlsContainer.appendChild(this.progressBarContainer);
+      this.progressBar = document.createElement("div");
+      this.progressBar.className = "progress";
 
-        // Agregar contenedor de controles al contenedor del video
-        this.videoContainer.appendChild(this.controlsContainer);
+      this.progressBarContainer.appendChild(this.progressBar);
+
+      // Agregar controles al contenedor
+      this.controlsContainer.appendChild(this.rewindButton);
+      this.controlsContainer.appendChild(this.playPauseButton);
+      this.controlsContainer.appendChild(this.forwardButton);
+      this.controlsContainer.appendChild(this.muteButton);
+      this.controlsContainer.appendChild(this.volumeSlider);
+      this.controlsContainer.appendChild(this.progressBarContainer);
+
+      // Agregar contenedor de controles al contenedor del video
+      this.videoContainer.appendChild(this.controlsContainer);
     }
 
     private initializeControls() {
-        this.playPauseButton.addEventListener('click', () => {
-            if (this.videoElement.paused) {
-                this.play();
-            } else {
-                this.pause();
-            }
-        });
+      this.playPauseButton.addEventListener("click", () => {
+        if (this.videoElement.paused) {
+          this.play();
+        } else {
+          this.pause();
+        }
+      });
 
-        // Evento para adelantar 10 segundos
-        this.forwardButton.addEventListener('click', () => {
-            this.videoElement.currentTime = Math.min(this.videoElement.currentTime + 10, this.videoElement.duration);
-        });
+      this.forwardButton.addEventListener("click", () => {
+        this.videoElement.currentTime = Math.min(
+          this.videoElement.currentTime + 10,
+          this.videoElement.duration
+        );
+      });
 
-        // Evento para atrasar 10 segundos
-        this.rewindButton.addEventListener('click', () => {
-            this.videoElement.currentTime = Math.max(this.videoElement.currentTime - 10, 0);
-        });
+      this.rewindButton.addEventListener("click", () => {
+        this.videoElement.currentTime = Math.max(
+          this.videoElement.currentTime - 10,
+          0
+        );
+      });
 
-        this.videoElement.addEventListener('timeupdate', () => {
-            this.updateProgressBar();
-        });
+      this.muteButton.addEventListener("click", () => {
+        this.toggleMute();
+      });
 
-        this.videoElement.addEventListener('play', () => {
-            this.updatePlayPauseIcon(); // Cambiar el ícono cuando se reproduce
-        });
+      this.volumeSlider.addEventListener("input", () => {
+        this.videoElement.volume = parseFloat(this.volumeSlider.value);
+        this.updateMuteButtonIcon();
+      });
 
-        this.videoElement.addEventListener('pause', () => {
-            this.updatePlayPauseIcon(); // Cambiar el ícono cuando se pausa
-            this.saveCurrentTime(this.videoElement.currentTime);
-        });
+      this.videoElement.addEventListener("timeupdate", () => {
+        this.updateProgressBar();
+      });
 
-        this.videoElement.addEventListener('ended', () => {
-            this.updatePlayPauseIcon(); // Cambiar el ícono al finalizar el video
-            this.saveCurrentTime(0); // Restablecer el tiempo al finalizar
-        });
+      this.videoElement.addEventListener("play", () => {
+        this.updatePlayPauseIcon();
+      });
 
-        window.addEventListener('beforeunload', () => {
-            this.saveCurrentTime(this.videoElement.currentTime);
-        });
+      this.videoElement.addEventListener("pause", () => {
+        this.updatePlayPauseIcon();
+        this.saveCurrentTime(this.videoElement.currentTime);
+      });
 
-        // Hacer clic en la barra de progreso para cambiar la posición del video
-        this.progressBarContainer.addEventListener('click', (event: MouseEvent) => {
-            const clickPosition = event.offsetX / this.progressBarContainer.offsetWidth;
-            const newTime = clickPosition * this.videoElement.duration;
-            this.videoElement.currentTime = newTime;
-        });
+      this.videoElement.addEventListener("ended", () => {
+        this.updatePlayPauseIcon();
+        this.saveCurrentTime(0);
+      });
 
-        // Añadir evento de mouseout al contenedor del video
-        this.videoContainer.addEventListener('mouseout', () => {
-            this.hideControls();
-        });
+      window.addEventListener("beforeunload", () => {
+        this.saveCurrentTime(this.videoElement.currentTime);
+      });
+
+      this.progressBarContainer.addEventListener("click", (event: MouseEvent) => {
+        const clickPosition =
+          event.offsetX / this.progressBarContainer.offsetWidth;
+        const newTime = clickPosition * this.videoElement.duration;
+        this.videoElement.currentTime = newTime;
+      });
+
+      this.videoContainer.addEventListener("mouseout", () => {
+        this.hideControls();
+      });
+
+      // Mostrar el slider de volumen al hacer hover en el botón de mutear
+      this.muteButton.addEventListener("mouseover", () => {
+        this.volumeSlider.style.display = "block"; // Mostrar el slider al hacer hover
+      });
+
+      this.muteButton.addEventListener("mouseout", () => {
+        this.volumeSlider.style.display = "none"; // Ocultar el slider cuando el mouse sale
+      });
+
+      this.volumeSlider.addEventListener("mouseover", () => {
+        this.volumeSlider.style.display = "block"; // Mantener el slider visible mientras el mouse esté sobre él
+      });
+
+      this.volumeSlider.addEventListener("mouseout", () => {
+        this.volumeSlider.style.display = "none"; // Ocultar el slider cuando el mouse sale
+      });
     }
 
     private loadCurrentTime() {
-        const savedTime = localStorage.getItem(this.storageKey);
-        if (savedTime) {
-            this.videoElement.currentTime = parseFloat(savedTime);
-        }
+      const savedTime = localStorage.getItem(this.storageKey);
+      if (savedTime) {
+        this.videoElement.currentTime = parseFloat(savedTime);
+      }
     }
 
     private saveCurrentTime(time: number) {
-        localStorage.setItem(this.storageKey, time.toString());
+      localStorage.setItem(this.storageKey, time.toString());
     }
 
     private updateProgressBar() {
-        const percentage = (this.videoElement.currentTime / this.videoElement.duration) * 100;
-        this.progressBar.style.width = `${percentage}%`;
+      const percentage =
+        (this.videoElement.currentTime / this.videoElement.duration) * 100;
+      this.progressBar.style.width = `${percentage}%`;
     }
 
     private updatePlayPauseIcon() {
-        if (this.videoElement.paused) {
-            this.playPauseButton.innerHTML = '<i class="fas fa-play"></i>'; // Ícono de reproducción
-        } else {
-            this.playPauseButton.innerHTML = '<i class="fas fa-pause"></i>'; // Ícono de pausa
-        }
+      this.playPauseButton.innerHTML = this.videoElement.paused
+        ? '<i class="fas fa-play"></i>'
+        : '<i class="fas fa-pause"></i>';
+    }
+
+    private toggleMute() {
+      this.videoElement.muted = !this.videoElement.muted;
+      this.updateMuteButtonIcon();
+    }
+
+    private updateMuteButtonIcon() {
+      this.muteButton.innerHTML = this.videoElement.muted
+        ? '<i class="fas fa-volume-mute"></i>' // Ícono de volumen silenciado
+        : '<i class="fas fa-volume-up"></i>'; // Ícono de volumen normal
     }
 
     private addMouseMoveListener() {
-        this.videoContainer.addEventListener('mousemove', () => {
-            clearTimeout(this.hideControlsTimeout);
-            this.showControls();
-            this.hideControlsTimeout = setTimeout(() => this.hideControls(), 3000);
-        });
+      this.videoContainer.addEventListener("mousemove", () => {
+        clearTimeout(this.hideControlsTimeout);
+        this.showControls();
+        this.hideControlsTimeout = setTimeout(() => this.hideControls(), 3000);
+      });
     }
 
     private showControls() {
-        this.controlsContainer.style.opacity = '1'; // Mostrar controles
-        this.controlsVisible = true;
+      this.controlsContainer.style.opacity = "1";
+      this.controlsVisible = true;
     }
 
     private hideControls() {
-        this.controlsContainer.style.opacity = '0'; // Ocultar controles
-        this.controlsVisible = false;
+      this.controlsContainer.style.opacity = "0";
+      this.controlsVisible = false;
     }
 
     public play() {
-        this.videoElement.play();
+      this.videoElement.play();
     }
 
     public pause() {
-        this.videoElement.pause();
+      this.videoElement.pause();
     }
-}
+  }
