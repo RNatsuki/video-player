@@ -1,102 +1,135 @@
+/* Crea Variables */
+
+:root {
+    --transparent-used: rgba(0, 0, 0, 0.7);
+}
+
+/* Establece el color de fondo y el color de texto predeterminado */
+
 /* Asegurarse de que el video se comporte como contenedor */
 /* Ajusta el tamaño del video a su contenedor */
 video {
-    width: 100%; /* Se adapta al ancho del contenedor */
-    height: auto; /* Mantiene la proporción del video */
-    max-width: 800px; /* Establece un ancho máximo si es necesario */
-    display: block;
-    margin: 0 auto; /* Centrar el video en su contenedor */
+  width: 100%; /* Se adapta al ancho del contenedor */
+  height: auto; /* Mantiene la proporción del video */
+  max-width: 800px; /* Establece un ancho máximo si es necesario */
+  display: block;
+  margin: 0 auto; /* Centrar el video en su contenedor */
 }
 
 /* Ajustar el contenedor de controles dentro del video */
 .video-controls {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    width: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    padding: 10px;
-    box-sizing: border-box;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  padding: 10px;
+  box-sizing: border-box;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .video-container {
-    position: relative; /* Permite que los controles estén dentro del video */
-    width: 100%; /* Adaptable al tamaño de su contenedor */
-    max-width: 800px;
-    margin: 0 auto; /* Centrar el video en su contenedor */
+  position: relative; /* Permite que los controles estén dentro del video */
+  width: 100%; /* Adaptable al tamaño de su contenedor */
+  max-width: 800px;
+  margin: 0 auto; /* Centrar el video en su contenedor */
 }
 /* Botón de reproducción/pausa */
 /* Establecer ancho fijo para el botón de reproducción/pausa */
 button {
-    background-color: transparent;
-    border: none;
-    color: white;
-    font-size: 20px;
-    padding: 5px 10px;
-    cursor: pointer;
-    transition: transform 0.2s ease;
-    width: 40px; /* Ancho fijo */
-    text-align: center;
+  background-color: transparent;
+  border: none;
+  color: white;
+  font-size: 20px;
+  padding: 5px 10px;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+  width: 40px; /* Ancho fijo */
+  text-align: center;
 }
 
 button:hover {
-    transform: scale(1.2);
+  transform: scale(1.2);
 }
 
 /* Asegúrate de que el ícono esté centrado y sea clickeable */
 button i {
-    pointer-events: none;
-    display: inline-block;
-    width: 100%; /* Hacer que el ícono ocupe todo el ancho del botón */
+  pointer-events: none;
+  display: inline-block;
+  width: 100%; /* Hacer que el ícono ocupe todo el ancho del botón */
 }
 
 /* Controles de video */
 .video-controls {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: rgba(0, 0, 0, 0.7);
-    padding: 10px;
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    width: 100%;
-    box-sizing: border-box;
-    z-index: 1;
-    transition: transform 0.5s;
-    opacity: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--transparent-used);
+  padding: 10px;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  box-sizing: border-box;
+  z-index: 1;
+  transition: transform 0.5s;
+  opacity: 1;
 }
 
 /* Barra de progreso */
 .progress-bar {
-    flex-grow: 1;
-    height: 5px;
-    background: rgba(255, 255, 255, 0.3);
-    cursor: pointer;
-    position: relative;
-    margin: 0 10px;
+  flex-grow: 1;
+  height: 5px;
+  background: rgba(255, 255, 255, 0.3);
+  cursor: pointer;
+  position: relative;
+  margin: 0 10px;
 }
 
 .progress {
-    height: 100%;
-    background-color:red;
-    width: 0;
+  height: 100%;
+  background-color: red;
+  width: 0;
 }
 
-.time-indicator {
+.current-time {
+  display: none;
+}
+
+.duration-time {
+    color: #ffffff; /* Cambia el color según tu preferencia */
+    font-size: 14px; /* Tamaño de fuente que sea visible */
+    margin-left: 10px; /* Espacio a la izquierda para separarlo de otros elementos */
+  }
+
+  .time-indicator {
     position: absolute;
     bottom: 100%; /* Just above the progress bar */
-    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    pointer-events: none; /* Para evitar que bloquee la interacción con la barra de progreso */
+    transform: translateX(-50%);
+    transition: left 0.1s; /* Animación suave para la posición */
+  }
+
+  .time-text {
+    background-color: var(--transparent-used);
     color: #fff;
     padding: 2px 5px;
     border-radius: 3px;
     font-size: 12px;
-    transform: translateX(-50%);
-    pointer-events: none; /* Para evitar que bloquee la interacción con la barra de progreso */
-    transition: left 0.1s; /* Animación suave para la posición */
+    margin-bottom: 2px; /* Espacio entre el cuadro y la flecha */
+  }
+
+  .arrow-down {
+    width: 0;
+    height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 5px solid var(--transparent-used); /* Misma coloración que el cuadro */
   }

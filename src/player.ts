@@ -17,10 +17,8 @@ export class VideoPlayer {
     private timeIndicator!: HTMLDivElement; // Elemento para mostrar los minutos transcurridos
 
     constructor(videoElementId: string) {
-      this.videoElement = document.getElementById(
-        videoElementId
-      ) as HTMLVideoElement;
-      this.videoContainer = this.videoElement.parentNode as HTMLDivElement; // Obtener el contenedor del video
+      this.videoElement = (document.getElementById(videoElementId) as HTMLVideoElement);
+      this.videoContainer = (this.videoElement.parentNode as HTMLDivElement); // Obtener el contenedor del video
       this.createControls();
       this.createTimeIndicator(); // Crear el indicador de tiempo
       this.initializeControls();
@@ -88,8 +86,7 @@ export class VideoPlayer {
       this.durationDisplay.className = "duration-time";
       this.durationDisplay.innerText = "00:00"; // Duración total inicial
 
-      // Agregar los elementos de tiempo al contenedor de controles
-      this.controlsContainer.appendChild(this.currentTimeDisplay);
+      // Agregar solo el elemento de duración al contenedor de controles
       this.controlsContainer.appendChild(this.durationDisplay);
 
       // Agregar contenedor de controles al contenedor del video
@@ -100,7 +97,7 @@ export class VideoPlayer {
     private createTimeIndicator() {
       this.timeIndicator = document.createElement("div");
       this.timeIndicator.className = "time-indicator";
-      this.timeIndicator.innerText = "00:00";
+      this.timeIndicator.innerHTML = `<div class="time-text">00:00</div><div class="arrow-down"></div>`;
       this.progressBarContainer.appendChild(this.timeIndicator);
     }
 
@@ -238,20 +235,21 @@ export class VideoPlayer {
     }
 
     private updateTimeIndicator() {
-      const progressBarRect = this.progressBarContainer.getBoundingClientRect();
-      const progressWidth = this.progressBar.getBoundingClientRect().width;
+        const progressBarRect = this.progressBarContainer.getBoundingClientRect();
+        const progressWidth = this.progressBar.getBoundingClientRect().width;
 
-      const time = this.videoElement.currentTime;
-      const formattedTime = this.formatTime(time);
-      this.timeIndicator.innerText = formattedTime;
+        const time = this.videoElement.currentTime;
+        const formattedTime = this.formatTime(time);
+        (this.timeIndicator.querySelector('.time-text') as HTMLElement).innerText = formattedTime;
 
-      // Calcular la posición
-      const indicatorPosition = Math.min(
-        progressBarRect.width - this.timeIndicator.offsetWidth / 2,
-        progressWidth - this.timeIndicator.offsetWidth / 2
-      );
+        // Calcular la posición
+        const offset = 18; // Desplazamiento adicional en píxeles
+        const indicatorPosition = Math.min(
+            progressBarRect.width - this.timeIndicator.offsetWidth / 2,
+            progressWidth - this.timeIndicator.offsetWidth / 2
+        ) + offset; // Añadir el desplazamiento
 
-      this.timeIndicator.style.left = `${indicatorPosition}px`;
+        this.timeIndicator.style.left = `${indicatorPosition}px`;
     }
 
     private updatePlayPauseIcon() {
