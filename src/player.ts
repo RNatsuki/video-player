@@ -12,6 +12,9 @@ export class VideoPlayer {
     private controlsVisible: boolean = true;
     private hideControlsTimeout: any; // Para almacenar el timeout
     private videoContainer!: HTMLDivElement; // Contenedor del video
+    private currentTimeDisplay!: HTMLSpanElement; // Mostrar tiempo actual
+    private durationDisplay!: HTMLSpanElement; // Mostrar duración total
+    private timeIndicator!: HTMLDivElement; // Elemento para mostrar los minutos transcurridos
 
     constructor(videoElementId: string) {
       this.videoElement = document.getElementById(
@@ -19,11 +22,13 @@ export class VideoPlayer {
       ) as HTMLVideoElement;
       this.videoContainer = this.videoElement.parentNode as HTMLDivElement; // Obtener el contenedor del video
       this.createControls();
+      this.createTimeIndicator(); // Crear el indicador de tiempo
       this.initializeControls();
       this.loadCurrentTime();
       this.addMouseMoveListener();
     }
 
+    // Crear controles
     private createControls() {
       // Crear contenedor de controles
       this.controlsContainer = document.createElement("div");
@@ -74,10 +79,32 @@ export class VideoPlayer {
       this.controlsContainer.appendChild(this.volumeSlider);
       this.controlsContainer.appendChild(this.progressBarContainer);
 
+      // Crear elementos para mostrar el tiempo
+      this.currentTimeDisplay = document.createElement("span");
+      this.currentTimeDisplay.className = "current-time";
+      this.currentTimeDisplay.innerText = "00:00"; // Tiempo actual inicial
+
+      this.durationDisplay = document.createElement("span");
+      this.durationDisplay.className = "duration-time";
+      this.durationDisplay.innerText = "00:00"; // Duración total inicial
+
+      // Agregar los elementos de tiempo al contenedor de controles
+      this.controlsContainer.appendChild(this.currentTimeDisplay);
+      this.controlsContainer.appendChild(this.durationDisplay);
+
       // Agregar contenedor de controles al contenedor del video
       this.videoContainer.appendChild(this.controlsContainer);
     }
 
+    // Crea el indicador de tiempo
+    private createTimeIndicator() {
+      this.timeIndicator = document.createElement("div");
+      this.timeIndicator.className = "time-indicator";
+      this.timeIndicator.innerText = "00:00";
+      this.progressBarContainer.appendChild(this.timeIndicator);
+    }
+
+    // Inicializar controles
     private initializeControls() {
       this.playPauseButton.addEventListener("click", () => {
         if (this.videoElement.paused) {
@@ -112,6 +139,8 @@ export class VideoPlayer {
 
       this.videoElement.addEventListener("timeupdate", () => {
         this.updateProgressBar();
+        this.updateTimeIndicator(); // Añadir esta línea para actualizar el indicador de tiempo
+        this.updateTimeDisplays(); // Actualiza los elementos de tiempo
       });
 
       this.videoElement.addEventListener("play", () => {
@@ -159,6 +188,36 @@ export class VideoPlayer {
       this.volumeSlider.addEventListener("mouseout", () => {
         this.volumeSlider.style.display = "none"; // Ocultar el slider cuando el mouse sale
       });
+
+      this.videoElement.addEventListener("timeupdate", () => {
+        this.updateProgressBar();
+        this.updateTimeIndicator(); // Añadir esta línea para actualizar el indicador de tiempo
+        this.updateTimeDisplays(); // Actualiza los elementos de tiempo
+      });
+
+      this.videoElement.addEventListener("loadedmetadata", () => {
+        this.updateDurationDisplay(); // Actualiza la duración total al cargar el video
+      });
+    }
+
+    private updateTimeDisplays() {
+      const currentTime = this.videoElement.currentTime;
+      this.currentTimeDisplay.innerText = this.formatTime(currentTime);
+    }
+
+    private updateDurationDisplay() {
+      const duration = this.videoElement.duration;
+      this.durationDisplay.innerText = this.formatTime(duration);
+    }
+
+    private formatTime(seconds: number): string {
+      const minutes = Math.floor(seconds / 60);
+      const secs = Math.floor(seconds % 60);
+      return `${this.padZero(minutes)}:${this.padZero(secs)}`;
+    }
+
+    private padZero(num: number): string {
+      return num < 10 ? `0${num}` : `${num}`;
     }
 
     private loadCurrentTime() {
@@ -176,6 +235,23 @@ export class VideoPlayer {
       const percentage =
         (this.videoElement.currentTime / this.videoElement.duration) * 100;
       this.progressBar.style.width = `${percentage}%`;
+    }
+
+    private updateTimeIndicator() {
+      const progressBarRect = this.progressBarContainer.getBoundingClientRect();
+      const progressWidth = this.progressBar.getBoundingClientRect().width;
+
+      const time = this.videoElement.currentTime;
+      const formattedTime = this.formatTime(time);
+      this.timeIndicator.innerText = formattedTime;
+
+      // Calcular la posición
+      const indicatorPosition = Math.min(
+        progressBarRect.width - this.timeIndicator.offsetWidth / 2,
+        progressWidth - this.timeIndicator.offsetWidth / 2
+      );
+
+      this.timeIndicator.style.left = `${indicatorPosition}px`;
     }
 
     private updatePlayPauseIcon() {
