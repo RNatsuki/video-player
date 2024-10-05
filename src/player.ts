@@ -3,26 +3,27 @@ export class VideoPlayer {
   private playPauseButton!: HTMLButtonElement;
   private forwardButton!: HTMLButtonElement;
   private rewindButton!: HTMLButtonElement;
-  private muteButton!: HTMLButtonElement; // Botón de mutear
-  private volumeSlider!: HTMLInputElement; // Control de volumen
+  private muteButton!: HTMLButtonElement;
+  private volumeSlider!: HTMLInputElement;
   private controlsContainer!: HTMLDivElement;
   private progressBarContainer!: HTMLDivElement;
   private progressBar!: HTMLDivElement;
+  private fullScreenButton!: HTMLButtonElement; // Botón de pantalla completa
   private storageKey: string = "videoPlayerCurrentTime";
   private controlsVisible: boolean = true;
-  private hideControlsTimeout: any; // Para almacenar el timeout
-  private videoContainer!: HTMLDivElement; // Contenedor del video
-  private currentTimeDisplay!: HTMLSpanElement; // Mostrar tiempo actual
-  private durationDisplay!: HTMLSpanElement; // Mostrar duración total
-  private timeIndicator!: HTMLDivElement; // Elemento para mostrar los minutos transcurridos
+  private hideControlsTimeout: any;
+  private videoContainer!: HTMLDivElement;
+  private currentTimeDisplay!: HTMLSpanElement;
+  private durationDisplay!: HTMLSpanElement;
+  private timeIndicator!: HTMLDivElement;
 
   constructor(videoElementId: string) {
     this.videoElement = document.getElementById(
       videoElementId
     ) as HTMLVideoElement;
-    this.videoContainer = this.videoElement.parentNode as HTMLDivElement; // Obtener el contenedor del video
+    this.videoContainer = this.videoElement.parentNode as HTMLDivElement;
     this.createControls();
-    this.createTimeIndicator(); // Crear el indicador de tiempo
+    this.createTimeIndicator();
     this.initializeControls();
     this.loadCurrentTime();
     this.addMouseMoveListener();
@@ -50,7 +51,7 @@ export class VideoPlayer {
 
     // Crear botón de mutear
     this.muteButton = document.createElement("button");
-    this.muteButton.innerHTML = '<i class="fas fa-volume-up"></i>'; // Ícono de volumen inicial
+    this.muteButton.innerHTML = '<i class="fas fa-volume-up"></i>';
 
     // Crear control de volumen
     this.volumeSlider = document.createElement("input");
@@ -58,9 +59,9 @@ export class VideoPlayer {
     this.volumeSlider.min = "0";
     this.volumeSlider.max = "1";
     this.volumeSlider.step = "0.01";
-    this.volumeSlider.value = this.videoElement.volume.toString(); // Establecer el volumen inicial
-    this.volumeSlider.className = "volume-slider"; // Clase para CSS
-    this.volumeSlider.style.display = "none"; // Ocultar por defecto
+    this.volumeSlider.value = this.videoElement.volume.toString();
+    this.volumeSlider.className = "volume-slider";
+    this.volumeSlider.style.display = "none";
 
     // Crear barra de progreso
     this.progressBarContainer = document.createElement("div");
@@ -71,6 +72,10 @@ export class VideoPlayer {
 
     this.progressBarContainer.appendChild(this.progressBar);
 
+    // Crear botón de pantalla completa
+    this.fullScreenButton = document.createElement("button");
+    this.fullScreenButton.innerHTML = '<i class="fas fa-expand"></i>'; // Icono de pantalla completa
+
     // Agregar controles al contenedor
     this.controlsContainer.appendChild(this.rewindButton);
     this.controlsContainer.appendChild(this.playPauseButton);
@@ -78,17 +83,17 @@ export class VideoPlayer {
     this.controlsContainer.appendChild(this.muteButton);
     this.controlsContainer.appendChild(this.volumeSlider);
     this.controlsContainer.appendChild(this.progressBarContainer);
+    this.controlsContainer.appendChild(this.fullScreenButton); // Agregar botón de pantalla completa
 
-    // Crear elementos para mostrar el tiempo
+    // Tiempo actual y duración
     this.currentTimeDisplay = document.createElement("span");
     this.currentTimeDisplay.className = "current-time";
-    this.currentTimeDisplay.innerText = "00:00"; // Tiempo actual inicial
+    this.currentTimeDisplay.innerText = "00:00";
 
     this.durationDisplay = document.createElement("span");
     this.durationDisplay.className = "duration-time";
-    this.durationDisplay.innerText = "00:00"; // Duración total inicial
+    this.durationDisplay.innerText = "00:00";
 
-    // Agregar solo el elemento de duración al contenedor de controles
     this.controlsContainer.appendChild(this.durationDisplay);
 
     // Agregar contenedor de controles al contenedor del video
@@ -192,15 +197,43 @@ export class VideoPlayer {
       this.volumeSlider.style.display = "none"; // Ocultar el slider cuando el mouse sale
     });
 
-    this.videoElement.addEventListener("timeupdate", () => {
-      this.updateProgressBar();
-      this.updateTimeIndicator(); // Añadir esta línea para actualizar el indicador de tiempo
-      this.updateTimeDisplays(); // Actualiza los elementos de tiempo
+    // Listener para botón de pantalla completa
+    this.fullScreenButton.addEventListener("click", () => {
+      if (this.videoContainer.requestFullscreen) {
+        this.videoContainer.requestFullscreen();
+      } else if ((this.videoContainer as any).webkitRequestFullscreen) {
+        // Safari
+        (this.videoContainer as any).webkitRequestFullscreen();
+      } else if ((this.videoContainer as any).msRequestFullscreen) {
+        // IE
+        (this.videoContainer as any).msRequestFullscreen();
+      }
     });
 
-    this.videoElement.addEventListener("loadedmetadata", () => {
-      this.updateDurationDisplay(); // Actualiza la duración total al cargar el video
+    // Listener para salir de pantalla completa
+    document.addEventListener("fullscreenchange", () => {
+      if (!document.fullscreenElement) {
+        this.exitFullScreen();
+      }
     });
+
+    document.addEventListener("webkitfullscreenchange", () => {
+      //@ts-ignore
+      if (!document.webkitFullscreenElement) {
+        this.exitFullScreen();
+      }
+    });
+
+    document.addEventListener("msfullscreenchange", () => {
+      //@ts-ignore
+      if (!document.msFullscreenElement) {
+        this.exitFullScreen();
+      }
+    });
+  }
+
+  private exitFullScreen() {
+    // Aquí puedes agregar lógica adicional si necesitas manejar algún estado al salir de pantalla completa.
   }
 
   private updateTimeDisplays() {
@@ -273,8 +306,8 @@ export class VideoPlayer {
 
   private updateMuteButtonIcon() {
     this.muteButton.innerHTML = this.videoElement.muted
-      ? '<i class="fas fa-volume-mute"></i>' // Ícono de volumen silenciado
-      : '<i class="fas fa-volume-up"></i>'; // Ícono de volumen normal
+      ? '<i class="fas fa-volume-mute"></i>'
+      : '<i class="fas fa-volume-up"></i>';
   }
 
   private addMouseMoveListener() {
